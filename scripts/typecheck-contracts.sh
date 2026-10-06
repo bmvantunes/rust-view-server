@@ -1,5 +1,4 @@
 #!/bin/sh
 set -eu
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-cd "$SCRIPT_DIR/../browser"
-./node_modules/.bin/tsc --noEmit -p tsconfig.contracts.json
+exec node "$SCRIPT_DIR/typecheck.mjs" contracts
