@@ -1,16 +1,9 @@
-# Generic raw and grouped queries
+# Rust view-server
 
-This work copy extends the accepted proto-first/public-rowId implementation with
-incremental count, countDistinct, sum, min, max and avg. Start with
-`AGGREGATE-CONTRACT.md`, `examples/grouped/README.md` and the delivery's current
-`HANDOFF.md`. Other baseline contracts/evidence retain their original scope and
-verdicts; their historical statements excluding aggregates describe the baseline.
+Complete source for the reviewed functional CP4 view-server: Rust service and ingestion, browser SDK/production Worker/React hooks, illustrative protobuf schemas, generated contracts, examples and tests.
 
-`createTopicHooks(catalog)` binds both raw and grouped result inference to generated
-source schemas. Source rows remain authored only in .proto. Remote grouped queries
-use the v15 WebSocket/MessagePack service and negotiate grouped_aggregates_v1.
-The local legacy WASM mode is unchanged and does not execute generic grouped queries.
+Start with [START-HERE.md](START-HERE.md) for pinned tools, generation, authoritative TypeScript7.0.2 checks, local builds and the private example. [PROVENANCE.md](PROVENANCE.md) distinguishes the exact reviewed CP4 source from subsequent handover and repository-usability changes. Existing contract documents retain their original scope; old experiment claims are not blanket qualification of this checkout.
 
-Use `bin/view_server_grouped` for the newly qualified ordinary service.
-`bin/view_server_grouped_faults` is for isolated fault qualification only.
-The old baseline executables remain preserved under their original names.
+Current functionality includes exact selected fields, nested/enum schemas, text predicates, grouped/global aggregates and HAVING, bounded INNER/LEFT joins, dependency reporting, opt-in selected-field patches, and compatible schema evolution/name diagnostics. Compression remains off; company-specific Decimal/Buf integration is input-pending.
+
+Historical executable aliases, caches, broker data, archives and bulk evidence are preserved outside Git. No new license has been selected; inherited copyright and third-party notices remain intact. [LEGACY-TESTS.md](LEGACY-TESTS.md) identifies historical test prerequisites. [FUTURE-WORK.md](FUTURE-WORK.md) records deferred consumer work.

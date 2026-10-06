@@ -1,0 +1,30 @@
+{
+  "notice": "Hash-bound external evidence index, not redistributed original evidence. Evidence is not needed to obtain/build source. Original archives are retained unchanged outside Git.",
+  "files": [
+    {
+      "path_relative_to_evidence_parent": "functional-roadmap-20261006/delivery/functional-roadmap.zip",
+      "sha256": "686ec5b937c4cea2e729d71d77838d7fcf235b70bd5e4d3f6d7b877a9cfd8ed9",
+      "bytes": 31361259
+    },
+    {
+      "path_relative_to_evidence_parent": "developer-handover-20261006/review-handover/REVIEW.md",
+      "sha256": "a17cadf6e648c3cdd0ec680ae67949aba2d4d199032bbc83d34040580acdfac4",
+      "bytes": 4044
+    },
+    {
+      "path_relative_to_evidence_parent": "developer-handover-20261006/review-handover/VERDICT.json",
+      "sha256": "af51e3d9b14f9c0e78dee67277dcd855cc6ab368ff2af75d0f5a9e235bb4c980",
+      "bytes": 2759
+    },
+    {
+      "path_relative_to_evidence_parent": "developer-handover-20261006/evidence/smoke-result.json",
+      "sha256": "47fc5e1b85d10326b63a43ad836bbca86c84f72f4fe6be71b13e08f2c8485e59",
+      "bytes": 559
+    },
+    {
+      "path_relative_to_evidence_parent": "developer-handover-20261006/repository-audit/BASELINE-CLEARANCE.json",
+      "sha256": "1b4a7356c33ebaf9f8552b30f01a9f8c3aff358342a201c41f528ed472ed2d4d",
+      "bytes": 1059
+    }
+  ]
+}

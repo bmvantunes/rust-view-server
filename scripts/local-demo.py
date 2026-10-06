@@ -1,13 +1,35 @@
 #!/usr/bin/env python3
 """Foreground private local example; reuse CP4 Kafka helpers, never historical broker data."""
 from pathlib import Path
-import argparse,fcntl,hashlib,json,mimetypes,os,signal,subprocess,sys,threading,time,types,urllib.request,uuid
+import argparse,fcntl,hashlib,json,mimetypes,os,shutil,signal,subprocess,sys,threading,time,types,urllib.request,uuid
 from http.server import ThreadingHTTPServer
-W=Path(__file__).resolve().parents[1];ROOT=W.parent;CURRENT=ROOT/'local-demo.json';STOP=threading.Event();ACTIONS=threading.Lock()
+W=Path(__file__).resolve().parents[1];ROOT=W/'.local';ROOT.mkdir(exist_ok=True);CURRENT=ROOT/'local-demo.json';STOP=threading.Event();ACTIONS=threading.Lock()
 source=W/'scripts/run-retention-kafka.py';h=types.ModuleType('local_helpers');h.__file__=str(source)
 exec(compile(source.read_text().rsplit('\ntry:\n    main()',1)[0],str(source),'exec'),h.__dict__)
 h.W=W;h.ROOT=ROOT
-NODE=h.NODE;ENV=h.ENV
+# The legacy harness supplies reusable helpers only. All external tools and runtime
+# locations are explicitly rebound here; no predecessor checkout is read.
+NODE=Path(shutil.which('node') or '/missing/node')
+h.NODE=NODE;h.JAVA_HOME=os.environ.get('JAVA_HOME','/missing/JAVA_HOME')
+h.KAFKA=Path(os.environ.get('KAFKA_HOME','/missing/KAFKA_HOME'))/'bin'
+h.OLD=W/'examples/local';h.TOKEN=uuid.uuid4().hex+uuid.uuid4().hex
+ENV={**os.environ,'JAVA_HOME':h.JAVA_HOME,'KAFKA_HEAP_OPTS':'-Xms256m -Xmx512m',
+     'V12_SESSION_TOKEN':h.TOKEN,'VIEW_SERVER_PRODUCER':str(ROOT/'bin/generic_kafka_producer'),
+     'PATH':str(NODE.parent)+os.pathsep+os.environ.get('PATH','')}
+h.ENV=ENV
+SERVICE_BINARY=ROOT/'bin/view_server'
+
+def start_broker():
+ props=(h.OLD/'broker.properties').read_text().replace('34492',str(h.PORTS['broker'])).replace('34493',str(h.PORTS['controller'])).replace('@BROKER_DATA@',str(h.RT/'broker-data'))
+ (h.RT/'broker.properties').write_text(props)
+ cluster=h.command([h.KAFKA/'kafka-storage.sh','random-uuid']).stdout.strip()
+ formatted=h.command([h.KAFKA/'kafka-storage.sh','format','--standalone','-t',cluster,'-c',h.RT/'broker.properties'])
+ (h.OUT/'format.log').write_text(formatted.stdout+formatted.stderr)
+ log=open(h.OUT/'broker.log','w')
+ p=h.record_process(subprocess.Popen([str(h.KAFKA/'kafka-server-start.sh'),str(h.RT/'broker.properties')],env=ENV,cwd=h.RT,stdout=log,stderr=subprocess.STDOUT,start_new_session=True),log,'broker')
+ h.wait_until(lambda:'Kafka Server started' in (h.OUT/'broker.log').read_text(errors='replace'),'Kafka broker startup',60,.2)
+ return p
+h.start_broker=start_broker
 
 def request(url,token):
  req=urllib.request.Request(url+'/shutdown',data=b'{}',headers={'Content-Type':'application/json','Authorization':'Bearer '+token},method='POST')
@@ -17,18 +39,18 @@ def preflight():
  required=[NODE,Path(h.JAVA_HOME)/'bin/java',h.KAFKA/'kafka-server-start.sh',h.OLD/'broker.properties',W/'browser/node_modules/typescript/package.json',W/'experiments/v131/node_modules/protobufjs/package.json']
  for p in required:
   if not p.is_file():raise RuntimeError('Missing existing prerequisite: '+str(p)+'; restore the approved pinned input. This launcher installs nothing.')
- baseline=json.loads((ROOT/'BASE-CP4.json').read_text())
- for n in ['bin/view_server_expanded','bin/generic_kafka_producer_expanded']:
-  p=W/n
-  if not p.is_file() or hashlib.sha256(p.read_bytes()).hexdigest()!=baseline[n]:raise RuntimeError('Expected reviewed CP4 executable differs or is missing: '+str(p))
+ for binary in [SERVICE_BINARY,ROOT/'bin/generic_kafka_producer']:
+  if not binary.is_file() or not os.access(binary,os.X_OK):raise RuntimeError('Missing local build: '+str(binary)+'; run python3 scripts/build-local.py')
  v=h.command([NODE,'--version']).stdout.strip()
  if v!='v26.1.0':raise RuntimeError('Expected qualified Node v26.1.0 at '+str(NODE)+'; got '+v)
  props=(h.OLD/'broker.properties').read_text()
- for expected in ['PLAINTEXT://127.0.0.1:34492','CONTROLLER://127.0.0.1:34493','log.dirs='+str(h.OLD/'broker-data')]:
+ for expected in ['PLAINTEXT://127.0.0.1:34492','CONTROLLER://127.0.0.1:34493','log.dirs=@BROKER_DATA@']:
   if expected not in props:raise RuntimeError('Existing private broker template differs; inspect '+str(h.OLD/'broker.properties'))
- h.command([Path(h.JAVA_HOME)/'bin/java','-version'])
+ java=h.command([Path(h.JAVA_HOME)/'bin/java','-version'])
+ if 'version "21.0.12.1"' not in java.stderr+java.stdout:raise RuntimeError('Expected qualified Java21.0.12.1; select JAVA_HOME explicitly')
+ if not (h.KAFKA.parent/'libs/kafka_2.13-4.1.0.jar').is_file():raise RuntimeError('Expected Kafka2.13 distribution4.1.0 at KAFKA_HOME')
  h.command(['sh',W/'scripts/typecheck-browser.sh'],timeout=60)
- print('Preflight PASS: Node26.1.0, project-local TypeScript/React, Java21, existing Kafka4.1.0 and exact CP4 binaries.',flush=True)
+ print('Preflight PASS: Node26.1.0, project-local TypeScript/React, Java21, existing Kafka4.1.0 and locally built service/producer.',flush=True)
 
 def action(name):
  with ACTIONS:
@@ -115,7 +137,7 @@ def start(port):
    sources.append(s);h.create_topic(s['source_topic'],policy='compact');h.create_topic(s['state_topic'],canonical=True)
   catalog['topics']=[t for t in catalog['topics'] if t['topic'] in PUBLIC];ids={t['schema'] for t in catalog['topics']};catalog['schemas']=[s for s in catalog['schemas'] if hashlib.sha256(json.dumps(s,separators=(',',':')).encode()).hexdigest() in ids]
   config=h.config_doc(sources,catalog,h.PORTS['query'],h.PORTS['health'],h.PORTS['web'],probe=True);(h.RT/'service.json').write_text(json.dumps(config,indent=2)+'\n')
-  log=open(h.OUT/'service.log','w');service=h.record_process(subprocess.Popen([str(W/'bin/view_server_expanded'),str(h.RT/'service.json')],cwd=h.RT,env=ENV,stdout=log,stderr=subprocess.STDOUT),log,'service')
+  log=open(h.OUT/'service.log','w');service=h.record_process(subprocess.Popen([str(SERVICE_BINARY),str(h.RT/'service.json')],cwd=h.RT,env=ENV,stdout=log,stderr=subprocess.STDOUT),log,'service')
   h.wait_until(lambda:h.current_health()['ready'],'private service readiness',40);action('reset');h.wait_until(lambda:h.current_health()['ready'],'seed readiness',10)
   meta={'run':run,'url':ORIGIN+'/','control':CONTROL,'runtime':str(h.RT),'evidence':str(h.OUT),'service_config':str(h.RT/'service.json'),'owned_pids':[p.pid for p,_,_ in h.CHILDREN if p.poll() is None]};CURRENT.write_text(json.dumps(meta,indent=2)+'\n');os.chmod(CURRENT,0o600);(h.OUT/'run.json').write_text(json.dumps({k:v for k,v in meta.items() if k!='control'},indent=2)+'\n')
   print('BROWSER_URL='+ORIGIN+'/',flush=True);print('Ready. Open that URL. Ctrl+C or: python3 scripts/local-demo.py stop',flush=True)

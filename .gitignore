@@ -1,0 +1,20 @@
+# Local dependencies and generated build/runtime outputs
+**/node_modules
+**/target/
+.local/
+build/
+bin/
+evidence/
+**/__pycache__/
+*.pyc
+.DS_Store
+.env
+.env.*
+!.env.example
+# Preserved historical artifacts outside the proposed source import
+.github/
+deploy/
+investigations/
+RETENTION-REPAIR.diff
+browser/v5-browser-counters.json
+browser/v5-browser-runtime.json

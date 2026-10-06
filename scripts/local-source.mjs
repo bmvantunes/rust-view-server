@@ -13,7 +13,7 @@ root.resolvePath=(origin,target)=>target==='google/protobuf/descriptor.proto'?re
 await root.load(W+'/examples/schema-expansion/topics.proto',{keepCase:true});root.resolveAll();
 const bindings=JSON.parse(fs.readFileSync(W+'/fixtures/expanded-topics/source-bindings.json','utf8'));
 function frame(type,row){const header=Buffer.alloc(6);header.writeUInt32BE(bindings[type].descriptor.schema_id,1);const t=root.lookupType(type);return Buffer.concat([header,t.encode(t.fromObject(row)).finish()]).toString('hex');}
-const child=spawn(W+'/bin/generic_kafka_producer_expanded',[config],{stdio:['pipe','pipe','inherit']});
+const child=spawn(process.env.VIEW_SERVER_PRODUCER??W+'/.local/bin/generic_kafka_producer',[config],{stdio:['pipe','pipe','inherit']});
 const lines=createInterface({input:child.stdout});
 const receipts=[];let ack=0;
 const commands=action==='reset'?[['nested_positions','r',null],['shit','a',{label:'Alice',oo:{name:'A',status:1,price:'12.5',note:'Illustrative source row'}}]]: [['nested_positions','r',action==='delete'?null:{details:{name:'A',status:1,price:action==='update'?'9':'7'}}]];

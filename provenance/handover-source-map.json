@@ -1,0 +1,16 @@
+{
+  "review": "ACCEPT_FOCUSED_HANDOVER_SOURCE_REVIEW",
+  "scope": "Exact10 source files; later repository portability changes are separate",
+  "files": {
+    "browser/join-demo.html": "ae25ee05cfc75e659a38ee0af8ed6462527e34635282436385ee19d6cbc4ed0a",
+    "browser/src/join-demo.test-d.ts": "859e1279fe2b242aa4ea9e3381ab582cbc2c4a7af3cc56ddd7e9796b6d98fc8d",
+    "browser/src/join-demo.css": "6045efc0c122c8662030aaa38f6be034bc2b1b8481bacbc7d41cfe7f7b4b4a39",
+    "browser/src/join-demo.tsx": "0802a35a619c77ec2abc31e5f19918099c82bbdafad374418451b5d44c1d43fd",
+    "scripts/typecheck.mjs": "12522c2f09b240541d455acd8cca27d1b66958a6e20e751dac7b386316d7fe4d",
+    "scripts/local-source.mjs": "a9ce4490b802abc5596dd274b2b02c536c1155af41fb92eb2e5e8e2e68111bff",
+    "scripts/typecheck-all.sh": "a28b682f35b111c5c1f9bdbc0f21800312b6864809fb608feef9f940d65e1c83",
+    "scripts/local-demo.py": "9e22614ad62d7b3a60ed149972e1d9260d5cf28b5083446f874210f655a4fdfb",
+    "scripts/typecheck-browser.sh": "8d7b1a8ae777ca011125a0d37058f14035518216dc83721132939ef858f787db",
+    "scripts/typecheck-contracts.sh": "8a822b403cdb01ba9ad380ccf3a667dce2cda9a01a38cce2e4b2c81e27c697b8"
+  }
+}
