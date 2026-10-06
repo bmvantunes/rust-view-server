@@ -5,12 +5,12 @@ This is the complete CP4 source import plus separately recorded developer-handov
 
 ## Qualified tools and dependencies
 
-- macOS arm64 is the locally exercised host. Rust **1.96.1** (root `rust-toolchain.toml`), Node **26.1.0** (`.node-version`), Python **3.9.6**, CMake and the existing Apple command-line C/C++ toolchain are used here.
+- macOS arm64 is the locally exercised host. Rust **1.96.1** (root `rust-toolchain.toml`), Node **26.1.0** (`.node-version`), Python **3.9.6**, CMake **4.4.3** and the existing Apple command-line C/C++ toolchain are used here.
 - Browser dependencies: **pnpm 11.9.0**, TypeScript **7.0.2**, React **19.2.8**, `@types/react` **19.2.18**, `@types/react-dom` **19.2.4**, Vite Plus **0.3.0**. `browser/package.json` and `browser/pnpm-lock.yaml` are authoritative. TypeScript 5 is unsupported; the authoritative check rejects missing or mismatched local compilers and never downloads a fallback.
 - Existing codec/generator dependencies use their existing npm lockfiles: `experiments/v131/package-lock.json` and the historical `experiments/v13/package-lock.json`. Keep this established layout; no package-manager migration.
 - For the optional private example: Java **21.0.12.1** and the Kafka **2.13 / 4.1.0** distribution. Set `JAVA_HOME` and `KAFKA_HOME` explicitly. Neither is committed or installed by the launcher.
 
-On a new machine, install those tool versions through your normal approved process. Populate dependencies with `pnpm --dir browser install --frozen-lockfile`, `npm --prefix experiments/v131 ci`, and (for legacy codec tests) `npm --prefix experiments/v13 ci`. These are setup instructions, not a claim of network installation testing. This local preparation reuses already installed matching dependency caches; symlinks and caches are not tracked. Rust locked dependencies must be available in the Cargo cache for `--offline`.
+On a new machine, install those tool versions through your normal approved process. Populate dependencies with `pnpm --dir browser install --frozen-lockfile`, `npm --prefix experiments/v131 ci`, and (for legacy codec tests) `npm --prefix experiments/v13 ci`. These are setup instructions, not a claim of network installation testing. The ambient pnpm wrapper currently reports 12.9.1, so select the declared 11.9.0 before any fresh browser installation; no dependency install or lockfile rewrite was run here. This local preparation reuses already installed matching dependency caches; symlinks and caches are not tracked. Rust locked dependencies must be available in the Cargo cache for `--offline`.
 
 ## Generate, check, build, smoke
 

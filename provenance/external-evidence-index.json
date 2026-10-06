@@ -25,6 +25,56 @@
       "path_relative_to_evidence_parent": "developer-handover-20261006/repository-audit/BASELINE-CLEARANCE.json",
       "sha256": "1b4a7356c33ebaf9f8552b30f01a9f8c3aff358342a201c41f528ed472ed2d4d",
       "bytes": 1059
+    },
+    {
+      "path_relative_to_evidence_parent": "developer-handover-20261006/repository-build-audit/portable-entrypoint-final.json",
+      "sha256": "02dd4e587a2af3ae21fb83ef7cb57a44f6ed74c945cebfdd8611d005e153e7c8",
+      "bytes": 1171
+    },
+    {
+      "path_relative_to_evidence_parent": "developer-handover-20261006/repository-audit/FINAL-HISTORY-REVIEW.json",
+      "sha256": "9a8054c4f3f3f58a44ade05953939471bb2c6482b8657ebed30b2bd2b6633166",
+      "bytes": 1184
+    },
+    {
+      "path_relative_to_evidence_parent": "developer-handover-20261006/repository-preparation/clone-checks.json",
+      "sha256": "66bd94e33d6d48809159422b66e2c0955d7f192704009bb42a317152f62d445b",
+      "bytes": 1747
+    },
+    {
+      "path_relative_to_evidence_parent": "developer-handover-20261006/repository-preparation/clone-native-build.log",
+      "sha256": "4d46222ef39e96c2620f930bcb7f1bf27fce551090fe5418d8a24e8c62aaa85f",
+      "bytes": 7525
+    },
+    {
+      "path_relative_to_evidence_parent": "developer-handover-20261006/repository-preparation/clone-rust-smoke.log",
+      "sha256": "0601c1a939235f2c3aaf5258b4dc18fa3a5350568f2f592b56982651faffc8fe",
+      "bytes": 2388
+    },
+    {
+      "path_relative_to_evidence_parent": "developer-handover-20261006/repository-preparation/clone-smoke-result.json",
+      "sha256": "47fc5e1b85d10326b63a43ad836bbca86c84f72f4fe6be71b13e08f2c8485e59",
+      "bytes": 559
+    },
+    {
+      "path_relative_to_evidence_parent": "developer-handover-20261006/repository-preparation/clone-launch.log",
+      "sha256": "5af730b56339c212f52926b49e48d350cd753505f56afe26b309b6c786edffdf",
+      "bytes": 406
+    },
+    {
+      "path_relative_to_evidence_parent": "developer-handover-20261006/repository-preparation/clone-stop.log",
+      "sha256": "be7a83a54ef3e0d0f5584c7fd49fbde4c36d16fc9cd4955d4bd5c3c247417957",
+      "bytes": 19
+    },
+    {
+      "path_relative_to_evidence_parent": "developer-handover-20261006/repository-preparation/product-preservation.json",
+      "sha256": "72d763187fc5725445d8812e775404be02580e712ba6be40b837621de0927e29",
+      "bytes": 17005
+    },
+    {
+      "path_relative_to_evidence_parent": "developer-handover-20261006/repository-verification-clone/.local/evidence/local-f2231653168d/cleanup.json",
+      "sha256": "b566715411bf719bf468e579323b754cd7a310592263419e0d0c92b55c08fe08",
+      "bytes": 569
     }
   ]
 }
