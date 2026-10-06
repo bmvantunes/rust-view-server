@@ -3,6 +3,8 @@
 Definitive local project: `/Users/bruno/Projects/rust-view-server/developer-handover-20261006/work`.
 This is the complete CP4 source import plus separately recorded developer-handover and repository-usability changes. No historical ZIP or predecessor checkout is needed for production source. See `PROVENANCE.md` and `provenance/` for the exact boundary.
 
+The [GitHub repository](https://github.com/bmvantunes/rust-view-server) is public as of 2026-10-06; creation, push and visibility authorization are complete. See [PROVENANCE.md](PROVENANCE.md) for the retained public-metadata caveat and the distinction from a complete public-release/security review. The private local example below still runs on loopback; “private” there describes the example, not GitHub visibility.
+
 ## Qualified tools and dependencies
 
 - macOS arm64 is the locally exercised host. Rust **1.96.1** (root `rust-toolchain.toml`), Node **26.1.0** (`.node-version`), Python **3.9.6**, CMake **4.4.3** and the existing Apple command-line C/C++ toolchain are used here.
