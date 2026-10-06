@@ -1,0 +1,26 @@
+syntax = "proto3";
+package example;
+import "view-options.proto";
+import "common.proto";
+import "other.proto";
+message Shit {
+  option (view.schema_id) = "shit";
+  option (view.expanded) = true;
+  example.common.Details oo = 1;
+  example.common.Details alternate = 2;
+  string label = 3;
+}
+message Position {
+  option (view.schema_id) = "nested_positions";
+  option (view.expanded) = true;
+  example.common.Details details = 1;
+  other.Details peer = 2;
+  message Meta { string name = 1; }
+  Meta meta = 3;
+}
+message Third {
+  option (view.schema_id) = "nested_third";
+  option (view.expanded) = true;
+  OtherShit oo = 1;
+}
+message OtherShit { string name = 1; }

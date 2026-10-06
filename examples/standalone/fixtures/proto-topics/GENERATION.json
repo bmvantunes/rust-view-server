@@ -1,0 +1,24 @@
+{
+  "generator": "protobufjs",
+  "version": "8.8.0",
+  "license": "BSD-3-Clause",
+  "generator_sha256": "bb42a9472ac3d7e5e0b8202ad5b4504daa81932eec557d56eb5b4fabd327ee9b",
+  "schema_id_validator_sha256": "179b69fdc0d5c48a9b9ecf03a5ca5aa0bd31428bb59a3168533d014dd3f1a351",
+  "descriptor_options_sha256": "6310d4d5af4bb1912b1164fd8273fa6b2d2ff0c75da712fb1bb318c2f07519da",
+  "options": {
+    "keepCase": true,
+    "syntax": "proto3",
+    "flatScalarOnly": true,
+    "compatibilityExamples": false
+  },
+  "inputs": {
+    "topics.proto": "8e0ed55378d54f660d9573f7a2df839d0eb9ce38010831ac14c908e0d7ecdddc",
+    "view-options.proto": "d98fc39340a55def678365a88493d7808b13731a2d9b74f104980c1d603a2fca"
+  },
+  "outputs": {
+    "browser/src/generated/topics.ts": "9880eaa85808340fa7b045561c0733494c37cb3c827626acd17b2583244e9774",
+    "fixtures/proto-topics/catalog.json": "66daffcfe1721dabfa40412387b39c5e1b86771c92f515a4cb3b44ffd904ff11",
+    "fixtures/proto-topics/browser-catalog.json": "c9cd980abb61681b3c9a959aa49105137bb5d0918477917ee4499b64cf83c07d",
+    "fixtures/proto-topics/source-bindings.json": "b15b55ff80ed5ec6c2741548dae064cfbcd348487a8597ead99cefbcee932a63"
+  }
+}

@@ -1,0 +1,4 @@
+syntax = "proto3";
+package other;
+enum Status { UNKNOWN = 0; OPEN = 1; }
+message Details { string name = 1; Status status = 2; }

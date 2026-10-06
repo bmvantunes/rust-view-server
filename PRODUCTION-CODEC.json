@@ -1,0 +1,12 @@
+{
+  "checkpoint": "row-delta-v1",
+  "codec": "msgpack",
+  "protocol": 14,
+  "path": "/v14",
+  "subprotocol": "view-server.v14.msgpack",
+  "decision_rule_sha256": "de98833cd1556ce63f722e3e53f21eab0a67c9afbc03b4f4f0c1856f73e2f95e",
+  "measurement_report_sha256": "fa94b7ea005882510238eff616a23b15b92a20833155cc3f39d5b01c3f393c49",
+  "single_codec": true,
+  "json_application_fallback": false,
+  "local_wasm_separate": true
+}

@@ -1,0 +1,38 @@
+{
+  "BalanceKey": {
+    "descriptor": {
+      "schema_id": 100,
+      "message_index": 0,
+      "descriptor_hex": "0a720a1042616c616e63654b65792e70726f746f1206746f70696373224e0a0a42616c616e63654b657912130a0674656e616e74180120012809480088010112140a076163636f756e74180220012804480188010142090a075f74656e616e74420a0a085f6163636f756e74620670726f746f33"
+    },
+    "key_fields": [
+      {
+        "name": "tenant",
+        "tag": 1,
+        "kind": "string"
+      },
+      {
+        "name": "account",
+        "tag": 2,
+        "kind": "uint64"
+      }
+    ]
+  },
+  "Balances": {
+    "descriptor": {
+      "schema_id": 101,
+      "message_index": 0,
+      "descriptor_hex": "0a6c0a0e42616c616e6365732e70726f746f1206746f70696373224a0a0842616c616e63657312150a087175616e74697479180120012803480088010112110a047269736b1802200128014801880101420b0a095f7175616e7469747942070a055f7269736b620670726f746f33"
+    },
+    "mapping": [
+      {
+        "field": "quantity",
+        "tag": 1
+      },
+      {
+        "field": "risk",
+        "tag": 2
+      }
+    ]
+  }
+}

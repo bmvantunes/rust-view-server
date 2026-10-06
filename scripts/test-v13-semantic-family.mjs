@@ -1,0 +1,19 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
+import {check,normalized} from './v13-oracle.mjs';import * as old from './v124-oracle.mjs';
+const root=new URL('../',import.meta.url),wasm=fs.readFileSync(new URL('browser/public/product_core.wasm',root));
+const {instance}=await WebAssembly.instantiate(wasm,{}),e=instance.exports;const read=(p,l)=>new TextDecoder().decode(new Uint8Array(e.memory.buffer,p,l));
+function call(h,fn,s){const b=new TextEncoder().encode(s),p=e.product_core_alloc(b.length);new Uint8Array(e.memory.buffer,p,b.length).set(b);try{const code=e[fn](h,p,b.length);assert.equal(code,0,read(e.product_core_error_ptr(h),e.product_core_error_len(h)));}finally{e.product_core_dealloc(p,b.length);}}
+const quantities=[['1__1_','11'],['-0_','0'],['+001','1'],['-9223372036854775808','-9223372036854775808'],['18446744073709551616','18446744073709551616'],['9'.repeat(10001),'9'.repeat(10001)],['-'+'9'.repeat(10000),'-'+'9'.repeat(10000)]];
+const decimals=[[{coefficient:'-110',scale:1},{coefficient:'-11',scale:0}],[{coefficient:'0',scale:10000},{coefficient:'0',scale:0}],[{coefficient:'110',scale:-10000},{coefficient:'110',scale:-10000}],[{coefficient:'1',scale:10000},{coefficient:'1',scale:10000}]];
+const labels=[undefined,{state:'missing'},{state:'null'},{state:'value',value:''},{state:'value',value:'😀'}];
+const q={where_expr:{op:'true'},direction:'ascending',offset:0,limit:2};let checked=0,poisons=0;
+for(const [quantity,wantQuantity]of quantities)for(const[amount,wantAmount]of decimals)for(const label of labels)for(const extra of [false,true]){
+ const source={id:'x',category:'',quantity,amount,...(label?{label}:{}),...(extra?{ignored:1}:{})};const want={id:'x',category:'',quantity:wantQuantity,amount:wantAmount,label:label??{state:'missing'}};
+ const h=e.product_core_new();try{call(h,'product_core_apply',JSON.stringify({command:'upsert',row:source}));call(h,'product_core_apply',JSON.stringify({command:'open',subscription:'q',query:q}));call(h,'product_core_result','q');const r=JSON.parse(read(e.product_core_output_ptr(h),e.product_core_output_len(h)));assert.deepEqual(r.rows,[want]);assert.deepEqual(normalized(source),want);check(r,[source],q);call(h,'product_core_apply',JSON.stringify({command:'upsert',row:want}));call(h,'product_core_result','q');assert.equal(JSON.parse(read(e.product_core_output_ptr(h),e.product_core_output_len(h))).version,r.version);
+ for(const field of ['quantity','label']){const bad=structuredClone(r);if(field==='quantity')bad.rows[0].quantity='3';else bad.rows[0].label={state:'value',value:'poison'};assert.throws(()=>check(bad,[source],q));poisons++;}checked++;}finally{e.product_core_free(h);}
+}
+// Historical oracle silently treats this label predicate as category equality.
+const source={id:'x',category:'a',quantity:'1',amount:{coefficient:'1',scale:0},label:{state:'value',value:'b'}};
+const unsupported={...q,where_expr:{op:'condition',args:{field:'label_equals',condition:'b'}}};const poisoned={total_rows:0,start_rank:0,rows:[]};old.check(poisoned,[source],unsupported);assert.throws(()=>check(poisoned,[source],unsupported),/unsupported oracle predicate/);
+for(const where_expr of [{op:'false'},{op:'and',args:[]},{op:'condition',args:{field:'quantity',condition:{op:'equal',value:'1'}}}])assert.throws(()=>check(poisoned,[source],{...q,where_expr}),/unsupported oracle predicate/);
+const report={status:'passed',run_id:process.env.ACCEPTANCE_RUN_ID??null,wasm_sha256:createHash('sha256').update(wasm).digest('hex'),fixedPairs:checked,canonicalNoops:checked,poisonRejected:poisons,unsupportedPredicateHistoricalAcceptsPoison:true,unsupportedPredicateCurrentExplicit:true};fs.mkdirSync(new URL('evidence/v13/',root),{recursive:true});fs.writeFileSync(new URL('evidence/v13/semantic-family.json',root),JSON.stringify(report,null,2)+'\n');console.log(report);

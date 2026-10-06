@@ -1,0 +1,132 @@
+{
+  "status": "IMPLEMENTATION_QUALIFICATION_COMPLETE",
+  "independent_acceptance": false,
+  "gates": [
+    {
+      "name": "RET-1 original native",
+      "status": "EXPECTED_RED",
+      "evidence": "evidence/repair/repair-red-ab375ce4/result.json",
+      "scope": "Pinned v1 fault binary; actual provider/production Worker; pending264 of520 due; close rejection fails peer/provider."
+    },
+    {
+      "name": "RET-1 final native and mounted",
+      "status": "PASS",
+      "evidence": "evidence/repair/repair-green-235013f4/independent-raw-oracle.json",
+      "scope": "Direct close, release/unmount, StrictMode, reentrant health cleanup, healthy peer navigation; native10 subscriptions after selected cleanup,0 after teardown."
+    },
+    {
+      "name": "RET-2 diagnostic red",
+      "status": "EXPECTED_RED",
+      "evidence": "evidence/repair/ret2-red.log",
+      "scope": "19 exact work-count cases; old per-commit audit visits all sticky rows."
+    },
+    {
+      "name": "RET-2 green and corruption",
+      "status": "PASS",
+      "evidence": "evidence/repair/native-affected.log",
+      "scope": "Unchanged rows are not scanned live; full restore auditing retained; affected-index and manifest corruption rejected."
+    },
+    {
+      "name": "Real Kafka final",
+      "status": "PASS",
+      "evidence": "evidence/retention/retention-93677c24/qualification.json",
+      "scope": "Source-silent expiry, count/UPSERT/stale generation, pre/postcommit faults, whole/helper/sink on same page, nonempty cleaner comparison and write-denied successor with subsequent live update."
+    },
+    {
+      "name": "Independent browser oracle",
+      "status": "PASS",
+      "evidence": "evidence/retention/retention-93677c24/independent-browser-oracle.json",
+      "scope": "Six completed cuts recomputed from raw source inputs/timestamps/NEXT; raw/grouped all-six aggregates, totals, order, sink windows and helpers."
+    },
+    {
+      "name": "Canonical digest/root/metadata oracle",
+      "status": "PASS",
+      "evidence": "evidence/retention/retention-93677c24/canonical-image-equality.json",
+      "scope": "Independent envelope digests, last-key fold, ROW roots, manifests and source NEXT match; each source has1 survivor and7 expired sticky entries."
+    },
+    {
+      "name": "Fresh paired workload",
+      "status": "PASS",
+      "evidence": "evidence/retention/retention-measure-d9e7f97c/workload-comparison.json",
+      "scope": "64 raw index samples retained. CPU/RSS and liveRows/recordsCommitted are process-wide. One due-to-commit observation242ms; polling observation951ms after due."
+    },
+    {
+      "name": "Full browser and contract type projects",
+      "status": "PASS",
+      "evidence": "evidence/repair/types-full-final.log",
+      "scope": "TypeScript7.0.2, real pinned React types; A1/A2 complete project and unsafe-use diagnostics also pass."
+    },
+    {
+      "name": "A1 types",
+      "status": "PASS",
+      "evidence": "evidence/repair/a1-types.log",
+      "scope": "Pinned source-bound safe/unsafe union fixtures."
+    },
+    {
+      "name": "A2 types",
+      "status": "PASS",
+      "evidence": "evidence/repair/a2-types.log",
+      "scope": "Pinned source-bound presence fixtures plus A1 regressions."
+    },
+    {
+      "name": "Mounted lifecycle suite",
+      "status": "PASS",
+      "evidence": "evidence/repair/browser-regressions.log",
+      "scope": "81 tests in10 files; R1/R1-MIXED/H1, StrictMode, reentrant lifecycle, grouped/raw and retention runtime checks."
+    },
+    {
+      "name": "A1 production smoke",
+      "status": "PASS",
+      "evidence": "evidence/a1/a1-b25f51d2",
+      "scope": "Changed ordinary binary, actual production Worker, whole/helper/sink dynamic queries."
+    },
+    {
+      "name": "A2 production smoke",
+      "status": "PASS",
+      "evidence": "evidence/a2/a2-ffc6f0fb",
+      "scope": "Changed ordinary binary, actual production Worker, presence/narrowing and mounted result surfaces."
+    },
+    {
+      "name": "Affected native",
+      "status": "PASS",
+      "evidence": "evidence/repair/native-affected.log",
+      "scope": "35 library tests and31 selected integration tests; cached health listener included; cleanup shape/resource and obsolete-acquisition checks."
+    },
+    {
+      "name": "Native core full suite",
+      "status": "PASS",
+      "evidence": "evidence/repair/native-core-full.log",
+      "scope": "28 library+2engine-contract+1retention-oracle+3rowId+5source-contract tests."
+    },
+    {
+      "name": "Mock target approved loopback",
+      "status": "PASS",
+      "evidence": "evidence/repair/mock-approved-loopback.log",
+      "scope": "3 tests under scoped loopback permission."
+    },
+    {
+      "name": "Reference/runtime policy",
+      "status": "PASS",
+      "evidence": "evidence/repair/reference.log",
+      "scope": "Four independent reference-model cases; runtime policy checks recorded separately."
+    },
+    {
+      "name": "Historical v1 mock failure",
+      "status": "INHERITED_FAILED",
+      "evidence": "evidence/inherited-v1/RETENTION-V1-HANDOFF.md",
+      "scope": "Reported cluster-count assertion remains historical failure. Its original raw stdout was not retained; current real/mock passes do not retroactively pass it."
+    },
+    {
+      "name": "Historical v1 full test stdout",
+      "status": "UNAVAILABLE_ORIGINAL_LOGS",
+      "evidence": "evidence/inherited-v1/RETENTION-V1-HANDOFF.md",
+      "scope": "Original claimed Rust/native/type terminal outputs were not persisted as full logs. Fresh executed replacements above have logs."
+    },
+    {
+      "name": "Review controlled probe",
+      "status": "INHERITED_REVIEW",
+      "evidence": "review/topic-retention-v1-focused-review.zip",
+      "scope": "Review ran unchanged provider with controlled Workers and React import stubs. No native/Kafka/production Worker/browser execution is inherited from it."
+    }
+  ]
+}

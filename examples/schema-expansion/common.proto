@@ -1,0 +1,14 @@
+syntax = "proto3";
+package example.common;
+import "view-options.proto";
+enum Status { option allow_alias = true; UNKNOWN = 0; OPEN = 1; ACTIVE = 1; CLOSED = 2; }
+message Details {
+  string name = 1;
+  Status status = 2;
+  optional string price = 3 [(view.decimal) = true, (view.optional) = true, (view.nullable) = true];
+  optional bool price_null = 4 [(view.null_for) = "price"];
+  optional string note = 5 [(view.optional) = true];
+  optional uint64 quantity = 6 [(view.optional) = true];
+}
+message KeyPart { optional string id = 1; }
+message Key { KeyPart account = 1 [(view.required) = true]; }

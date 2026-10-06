@@ -1,0 +1,3 @@
+import {defineConfig} from 'vite-plus';
+import {playwright} from '@vitest/browser-playwright';
+export default defineConfig({cacheDir:'../../cache/vite-functional',server:{host:'127.0.0.1'},test:{maxWorkers:1,fileParallelism:false,reporters:['verbose'],include:['src/product-provider.browser.test.tsx','src/grouped.browser.test.tsx','src/reconnect-status.browser.test.tsx','src/rowid.browser.test.tsx','src/v51.browser.test.tsx','src/topics.browser.test.tsx','src/dependency-reporting.browser.test.tsx','src/field-patches.browser.test.ts'],browser:{enabled:true,provider:playwright(),headless:true,instances:[{browser:'chromium',name:'chromium'}]}}});

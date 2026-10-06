@@ -1,0 +1,79 @@
+{
+  "status": "LOCALLY_QUALIFIED",
+  "independent_acceptance": false,
+  "company_decimal_buf_mapping": "INPUT_PENDING",
+  "gates": [
+    {
+      "gate": "generation",
+      "status": "PASS",
+      "evidence": [
+        "generation-and-types.json",
+        "legacy-codegen.log",
+        "symbol-tests.log"
+      ]
+    },
+    {
+      "gate": "types",
+      "status": "PASS",
+      "evidence": [
+        "types-browser.log",
+        "types-contracts.log",
+        "types-unsuppressed.log",
+        "type-diagnostics.json"
+      ]
+    },
+    {
+      "gate": "raw-source",
+      "status": "PASS",
+      "evidence": [
+        "ingestion-tests-pinned.log"
+      ]
+    },
+    {
+      "gate": "service-worker-oracle-third",
+      "status": "PASS",
+      "evidence": [
+        "schema-ac3ff292/result.json",
+        "schema-ac3ff292/cuts.json",
+        "schema-ac3ff292/inputs.json",
+        "schema-ac3ff292/bindings.json"
+      ]
+    },
+    {
+      "gate": "retention-cleanup",
+      "status": "PASS",
+      "evidence": [
+        "schema-ac3ff292/cuts.json",
+        "schema-cleanup-green-4511f7b6/result.json"
+      ]
+    },
+    {
+      "gate": "recovery",
+      "status": "PASS",
+      "evidence": [
+        "schema-ac3ff292/cuts.json",
+        "schema-ac3ff292/write-denied.json"
+      ]
+    },
+    {
+      "gate": "affected-regressions",
+      "status": "PASS",
+      "evidence": [
+        "native-tests-pinned.log",
+        "ingestion-tests-pinned.log",
+        "browser-regressions-attempt1.log",
+        "nested-codec.json",
+        "licenses.log",
+        "telemetry-final.json"
+      ]
+    },
+    {
+      "gate": "matched-comparison",
+      "status": "PASS",
+      "evidence": [
+        "work-comparison-pinned.json"
+      ]
+    }
+  ],
+  "scope": "Bounded illustrative schema slice; exact existing decimal strings; no company-schema or arbitrary Buf-plugin parity claimed"
+}

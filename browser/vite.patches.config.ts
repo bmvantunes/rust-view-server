@@ -1,0 +1,2 @@
+import {defineConfig} from 'vite-plus';import {playwright} from '@vitest/browser-playwright';
+export default defineConfig({optimizeDeps:{include:['@opentelemetry/core','@opentelemetry/exporter-trace-otlp-proto','@opentelemetry/resources','@opentelemetry/sdk-trace-base']},cacheDir:'../../cache/vite-patches',server:{host:'127.0.0.1'},test:{maxWorkers:1,fileParallelism:false,reporters:['verbose'],include:['src/field-patches.browser.test.ts'],browser:{enabled:true,provider:playwright(),headless:true,instances:[{browser:'chromium',name:'chromium'}]}}});

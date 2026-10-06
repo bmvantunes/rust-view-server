@@ -1,0 +1,9 @@
+import assert from 'node:assert/strict';import {validateQuery,validateGroupedRow,resultShape,groupId,aggregateCount,aggregateInteger,aggregateDecimal} from '../browser/src/topic-schema.ts';import {schemas} from '../browser/src/generated/legacy-topics.ts';const {orders,positions}=schemas;
+const q={global:true,aggregates:{n:{aggFunc:'count'},s:{aggFunc:'sum',field:'units'},a:{aggFunc:'avg',field:'units'},lo:{aggFunc:'min',field:'units'}},having:{op:'gt',field:'s',value:aggregateInteger('18446744073709551616')},orderBy:[]}as const;
+validateQuery(orders,q);validateGroupedRow(orders,q,{n:'0',s:'0',a:null,lo:null},['a','lo','n','s']);assert.equal(JSON.parse(resultShape('orders','f',q))[0],2);assert.equal(groupId('orders','f',orders,q,{n:'0'}),groupId('orders','f',orders,q,{n:'1'}));
+for(const having of [{op:'eq',field:'customer',value:'x'},{op:'is_null',field:'n'},{op:'contains',field:'s',value:'0'},{op:'gt',field:'n',value:1},{op:'gt',field:'s',value:'1.1'},{op:'gt',field:'a',value:'1.0000000000000000001'}])assert.throws(()=>validateQuery(orders,{...q,having}));
+for(const bad of [{...q,groupBy:['customer']},{...q,select:['price']},{...q,global:false},{...q,aggregates:{}},{...q,orderBy:[{field:'customer',direction:'asc'}]}])assert.throws(()=>validateQuery(orders,bad));
+validateQuery(orders,{groupBy:['customer'],aggregates:{n:{aggFunc:'count'}},having:{op:'and',clauses:[{op:'startsWith',field:'customer',value:'A'},{op:'ge',field:'n',value:aggregateCount('0')}]},orderBy:[]});
+assert.throws(()=>aggregateDecimal('01'));assert.throws(()=>aggregateInteger('1.1'));assert.throws(()=>aggregateCount('-1'));
+const floats={global:true,aggregates:{a:{aggFunc:'avg',field:'risk'}},having:{op:'is_null',field:'a'},orderBy:[]} as const;validateQuery(positions,floats);validateGroupedRow(positions,floats,{a:null},['a']);
+console.log('PASS global/HAVING descriptors, empty validation, 14 negative cases, exact constructors');

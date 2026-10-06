@@ -1,0 +1,31 @@
+{
+  "format": 1,
+  "schemas": [
+    {
+      "format": 2,
+      "id": "balances_v2",
+      "version": 2,
+      "key": "rowId",
+      "fields": [
+        {
+          "name": "quantity",
+          "kind": "int64",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "risk",
+          "kind": "number",
+          "optional": false,
+          "nullable": false
+        }
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "topic": "balances",
+      "schema": "d193759d5ba6570bae080f5c2f321da52f78d72f2c649fd782d46cb7b00d515c"
+    }
+  ]
+}

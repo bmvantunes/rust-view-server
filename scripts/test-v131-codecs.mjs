@@ -1,0 +1,37 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import {spawn} from 'node:child_process';import {createInterface} from 'node:readline';import {createHash} from 'node:crypto';
+import {encode,decode,exactBytes,exactBigInt,prepare,encodePrepared} from '../experiments/v131/js/codec.mjs';
+import {viewwire} from '../experiments/v131/js/wire.generated.js';
+import {encode as rawMP,ExtData} from '../experiments/v131/node_modules/@msgpack/msgpack/dist.esm/index.mjs';
+const root=new URL('../',import.meta.url),binary=process.env.V13_CODEC_BINARY??'/private/tmp/v131-codec-target/release/v13-codec-experiment';
+const child=spawn(binary,[],{stdio:['pipe','pipe','inherit']});const lines=createInterface({input:child.stdout})[Symbol.asyncIterator]();
+async function rust(j){child.stdin.write(JSON.stringify(j)+'\n');const line=await lines.next();assert(!line.done);return JSON.parse(line.value);}
+let cross=0,rejected=0;
+const integers=['0','1','-1','9007199254740991','9007199254740992','9007199254740993','-9223372036854775808','9223372036854775807','18446744073709551615','18446744073709551616','9'.repeat(10001),'-'+'9'.repeat(10000)];
+const cases=[{schema:13,topic:'synthetic-empty',fields:[],records:[]},{schema:13,topic:'synthetic-catalog',fields:['name','enabled'],records:[{name:'é😀',enabled:false}]},{schema:13,topic:'synthetic-ledger',fields:['quantity','tags'],records:[{quantity:'18446744073709551616',tags:['','a']}],extra:{additive:true}},null,false,true,0,1,-1,9007199254740991,-9007199254740991,'','😀é\u0000',[],{}, {one:false,zero:0,empty:'',nil:null},...integers.map(quantity=>({quantity,amount:{coefficient:quantity,scale:0}})),...[-10000,10000].map(scale=>({amount:{coefficient:'11',scale}})),{quantity:'11',label:{state:'missing'}},{quantity:'11',label:{state:'null'}},{quantity:'11',label:{state:'value',value:''}},{connection:'18446744073709551615',source_sequence:'0'}, {field:'quantity',condition:{op:'equal',value:'18446744073709551616'}}];
+try{
+ assert.deepEqual([...exactBytes('0')],[0]);assert.deepEqual([...exactBytes('-256')],[1,1,0]);assert.equal(exactBigInt(Uint8Array.of(0,255)),255n);
+ for(const codec of ['protobuf','msgpack']){
+  for(const value of cases){const fromRust=await rust({op:'encode',codec,value});assert(!fromRust.error,fromRust.error);assert.deepEqual(decode(Uint8Array.from(fromRust.bytes),codec),value);const js=encode(value,codec);const toRust=await rust({op:'decode',codec,bytes:[...js]});assert(!toRust.error,toRust.error);assert.deepEqual(toRust.value,value);cross++;}
+  for(const bytes of [[],[0,1,255],Array.from({length:1024},(_,i)=>i%256)]){const b=await rust({op:'encode_binary',codec,bytes});assert.deepEqual([...decode(Uint8Array.from(b.bytes),codec)],bytes);assert.deepEqual((await rust({op:'decode',codec,bytes:[...encode(Uint8Array.from(bytes),codec)]})).binary,bytes);cross++;}
+  // Fixed independent scalar wire vectors, not encoder-produced expectations.
+  const fixed=codec==='protobuf'?[[[8,1],null],[[16,0],false],[[24,3],-2],[[34,0],''],[[66,3,1,1,0],'-256'],[[66,1,0],'0']]:[[[0xc0],null],[[0xc2],false],[[0xfe],-2],[[0xa0],''],[[0xc7,3,42,1,1,0],'-256'],[[0xd4,42,0],'0']];
+  for(const[bytes,want]of fixed){assert.deepEqual(decode(Uint8Array.from(bytes),codec),want);assert.deepEqual((await rust({op:'decode',codec,bytes})).value,want);}
+  const sample=encode({quantity:'9007199254740993',label:{state:'value',value:'hello'},list:[1,2,3]},codec),bad=[];
+  for(let i=0;i<sample.length;i++)bad.push(sample.slice(0,i));
+  if(codec==='protobuf')bad.push(Uint8Array.of(0x48,1),Uint8Array.of(8,1,16,1),Uint8Array.of(0x22,0xff,0xff,0xff,0xff,0x0f),Uint8Array.of(0x22,1,0xff),Uint8Array.of(0x18,0x80,0),Uint8Array.of(0x42,2,1,0));
+  else bad.push(Uint8Array.of(0xc1),Uint8Array.of(0xc7,1,43,0),Uint8Array.of(0xdb,0xff,0xff,0xff,0xff),Uint8Array.of(0xdd,0xff,0xff,0xff,0xff),Uint8Array.of(0xa1,0xff),Uint8Array.of(0xcc,1),Uint8Array.of(0x82,0xa1,97,0,0xa1,97,1),rawMP(new ExtData(42,Uint8Array.of(1))),rawMP(new ExtData(42,Uint8Array.of(0,0))),rawMP(new ExtData(42,new Uint8Array(4156))));
+  for(const b of bad){assert.throws(()=>decode(b,codec),undefined,codec+' JS admitted hostile');const r=await rust({op:'decode',codec,bytes:[...b]});assert(r.error,codec+' Rust admitted hostile '+[...b]);rejected++;}
+  for(const value of [{quantity:'1'},{amount:{coefficient:'11',scale:-10000}}])assert.deepEqual(decode(encode(value,codec),codec),value);
+  for(const value of [{quantity:'1'.repeat(10002)},{quantity:'-'+'1'.repeat(10001)}, {x:1.5},{x:Number.MAX_SAFE_INTEGER+1},{x:'\ud800'}])assert.throws(()=>encode(value,codec));
+  let deep=0;for(let i=0;i<128;i++)deep=[deep];assert.deepEqual(decode(encode(deep,codec),codec),deep);assert.throws(()=>encode([deep],codec));{const r=await rust({op:'decode',codec,bytes:[...encode(deep,codec)]});assert(!r.error,codec+': '+r.error);};
+  const valueBoundary=[...Array.from({length:7},()=>Array(8192).fill(null)),Array(8183).fill(null)];assert.equal(decode(encode(valueBoundary,codec),codec).length,8);assert(!(await rust({op:'decode',codec,bytes:[...encode(valueBoundary,codec)]})).error);valueBoundary[7].push(null);assert.throws(()=>encode(valueBoundary,codec));
+  for(const container of ['array','map']){let edge='UTF-8 é😀';for(let i=0;i<128;i++)edge=container==='array'?[edge]:{k:edge};const frame=encode(edge,codec);assert.deepEqual(decode(frame,codec),edge);const r=await rust({op:'decode',codec,bytes:[...frame]});assert(!r.error,codec+' '+container+' depth128 '+r.error);assert.deepEqual(r.value,edge);}
+  let tooDeep=0,pbDeep={integer:0};for(let i=0;i<129;i++){tooDeep=[tooDeep];pbDeep={sequence:{items:[pbDeep]}};}const badDepth=codec==='protobuf'?viewwire.Value.encode(pbDeep).finish():rawMP(tooDeep,{maxDepth:132});assert.throws(()=>decode(badDepth,codec));assert((await rust({op:'decode',codec,bytes:[...badDepth]})).error);
+  for(const badScale of [-10001,10001]){const v=prepare({amount:{coefficient:'11',scale:0}});v.amount.scale=badScale;const bytes=encodePrepared(v,codec);assert.throws(()=>decode(bytes,codec));assert((await rust({op:'decode',codec,bytes:[...bytes]})).error);}
+  const mapBudget=Array.from({length:4},()=>Object.fromEntries(Array.from({length:8192},(_,i)=>['k'+i,null])));assert.throws(()=>encode(mapBudget,codec));
+  const bytes=new Uint8Array(4194304-5);assert.equal(encode(bytes,codec).length,4194304);assert.deepEqual(decode(encode(bytes,codec),codec),bytes);{const r=await rust({op:'decode',codec,bytes:[...encode(bytes,codec)]});assert.equal(r.binary.length,bytes.length);assert((await rust({op:'decode',codec,bytes:[...encode(bytes,codec),0]})).error);}assert.throws(()=>encode(new Uint8Array(bytes.length+1),codec));
+  const full=Array(8192).fill(null);assert.equal(decode(encode(full,codec),codec).length,8192);assert.throws(()=>encode([...full,null],codec));
+  const synthetic={layout:['bytes','text','exact'],rows:[{bytes:Uint8Array.of(0,1,255),text:'',quantity:'11'}]};assert.deepEqual(decode(encode(synthetic,codec),codec),synthetic);
+ }
+ const report={status:'passed',run_id:process.env.ACCEPTANCE_RUN_ID??null,crossLanguagePairs:cross,hostileRejectedBothLanguages:rejected,boundaries:['frame exact/+1','depth128/129','collection8192/8193','positive10001/10002digits','negative10000/10001digits'],binary_sha256:createHash('sha256').update(fs.readFileSync(binary)).digest('hex')};fs.writeFileSync(new URL('evidence/v13.1/codecs.json',root),JSON.stringify(report,null,2)+'\n');console.log(report);
+}finally{child.stdin.end();}

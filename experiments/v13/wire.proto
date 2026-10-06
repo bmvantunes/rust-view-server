@@ -1,0 +1,18 @@
+syntax = "proto3";
+package viewwire;
+// Both candidates encode the same row-oriented dynamic value tree. No JSON blobs.
+message Value {
+ oneof value {
+  bool nil = 1;
+  bool boolean = 2;
+  sint64 integer = 3; // ONLY checked safe metadata; never exact product values.
+  string text = 4;
+  bytes binary = 5;
+  Sequence sequence = 6;
+  Object object = 7;
+  bytes exact = 8; // sign octet then minimal unsigned big-endian magnitude
+ }
+}
+message Sequence { repeated Value items = 1; }
+message Entry { string key = 1; Value value = 2; }
+message Object { repeated Entry entries = 1; }

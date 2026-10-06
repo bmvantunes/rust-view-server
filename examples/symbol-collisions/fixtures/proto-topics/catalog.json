@@ -1,0 +1,277 @@
+{
+  "format": 1,
+  "schemas": [
+    {
+      "format": 2,
+      "id": "catalog_v2",
+      "version": 2,
+      "key": "rowId",
+      "fields": [
+        {
+          "name": "quantity",
+          "kind": "int64",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "businessId",
+          "kind": "string",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "risk",
+          "kind": "number",
+          "optional": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "format": 2,
+      "id": "class_v2",
+      "version": 2,
+      "key": "rowId",
+      "fields": [
+        {
+          "name": "quantity",
+          "kind": "int64",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "businessId",
+          "kind": "string",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "risk",
+          "kind": "number",
+          "optional": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "format": 2,
+      "id": "balanceKeyFields_v2",
+      "version": 2,
+      "key": "rowId",
+      "fields": [
+        {
+          "name": "quantity",
+          "kind": "int64",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "businessId",
+          "kind": "string",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "risk",
+          "kind": "number",
+          "optional": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "format": 2,
+      "id": "defineSchema_v2",
+      "version": 2,
+      "key": "rowId",
+      "fields": [
+        {
+          "name": "quantity",
+          "kind": "int64",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "businessId",
+          "kind": "string",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "risk",
+          "kind": "number",
+          "optional": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "format": 2,
+      "id": "defineCatalog_v2",
+      "version": 2,
+      "key": "rowId",
+      "fields": [
+        {
+          "name": "quantity",
+          "kind": "int64",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "businessId",
+          "kind": "string",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "risk",
+          "kind": "number",
+          "optional": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "format": 2,
+      "id": "schemas_v2",
+      "version": 2,
+      "key": "rowId",
+      "fields": [
+        {
+          "name": "quantity",
+          "kind": "int64",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "businessId",
+          "kind": "string",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "risk",
+          "kind": "number",
+          "optional": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "format": 2,
+      "id": "keyFields_v2",
+      "version": 2,
+      "key": "rowId",
+      "fields": [
+        {
+          "name": "quantity",
+          "kind": "int64",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "businessId",
+          "kind": "string",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "risk",
+          "kind": "number",
+          "optional": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "format": 2,
+      "id": "comparison_products_v2",
+      "version": 2,
+      "key": "rowId",
+      "fields": [
+        {
+          "name": "quantity",
+          "kind": "int64",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "businessId",
+          "kind": "string",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "risk",
+          "kind": "number",
+          "optional": false,
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "format": 2,
+      "id": "comparisonProducts_v2",
+      "version": 2,
+      "key": "rowId",
+      "fields": [
+        {
+          "name": "quantity",
+          "kind": "int64",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "businessId",
+          "kind": "string",
+          "optional": false,
+          "nullable": false
+        },
+        {
+          "name": "risk",
+          "kind": "number",
+          "optional": false,
+          "nullable": false
+        }
+      ]
+    }
+  ],
+  "topics": [
+    {
+      "topic": "catalog",
+      "schema": "3af72806f597f22d49cb57239d5cfc7b0662fdce7f08b5b3e518944158567384"
+    },
+    {
+      "topic": "class",
+      "schema": "d3d655d7692fa3ba27d8fb4bdac74cd1c4628fb93c2608f332c38ce566a5c8ff"
+    },
+    {
+      "topic": "balanceKeyFields",
+      "schema": "4042a188d393f2db5d9e9de4ef888d0c89884b92fc0bbc08f25dda4fbb3048e3"
+    },
+    {
+      "topic": "defineSchema",
+      "schema": "77d538d1ac6d9d286885bcf79c1336495cfc8ca9910a0169f9b9753452e01aca"
+    },
+    {
+      "topic": "defineCatalog",
+      "schema": "a92f6ecdc69925198c5c8bb4ae0d06edd179cff92b127f71cba08185cd2465ff"
+    },
+    {
+      "topic": "schemas",
+      "schema": "a0af9c30b803588a54d19cf9405a2d389891f0a56f037ee85e38adc14eb7a57b"
+    },
+    {
+      "topic": "keyFields",
+      "schema": "ce0d0fb255ce9970b0e715ea9373737743d5c354c79aa2dd8284c86f31ec36c8"
+    },
+    {
+      "topic": "comparison_products",
+      "schema": "d5b186edb167d58c1e4ec1ebc4ed01cffe7f3e6d31d13abde9266a3ccc425c6e"
+    },
+    {
+      "topic": "comparisonProducts",
+      "schema": "60e702d349b17768328558506d010c7b9c6cffd955a5e193ec4bdf6ee5e3fd3c"
+    }
+  ]
+}

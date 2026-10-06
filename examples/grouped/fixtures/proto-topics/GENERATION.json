@@ -1,0 +1,24 @@
+{
+  "generator": "protobufjs",
+  "version": "8.8.0",
+  "license": "BSD-3-Clause",
+  "generator_sha256": "bb42a9472ac3d7e5e0b8202ad5b4504daa81932eec557d56eb5b4fabd327ee9b",
+  "schema_id_validator_sha256": "179b69fdc0d5c48a9b9ecf03a5ca5aa0bd31428bb59a3168533d014dd3f1a351",
+  "descriptor_options_sha256": "6310d4d5af4bb1912b1164fd8273fa6b2d2ff0c75da712fb1bb318c2f07519da",
+  "options": {
+    "keepCase": true,
+    "syntax": "proto3",
+    "flatScalarOnly": true,
+    "compatibilityExamples": false
+  },
+  "inputs": {
+    "topics.proto": "754bab28ccb172d7f610b94ddd517455c524626fa6e42d99702049134657ec79",
+    "view-options.proto": "d98fc39340a55def678365a88493d7808b13731a2d9b74f104980c1d603a2fca"
+  },
+  "outputs": {
+    "browser/src/generated/topics.ts": "4b1f876783ff86ce3c705795b28d2908aa48b234b96bb9a0d5cfcf282dd7ec63",
+    "fixtures/proto-topics/catalog.json": "6013216103e3c38a449f95a2f525b95089443fd8432dffae11f9c4334054de94",
+    "fixtures/proto-topics/browser-catalog.json": "e73e9338165549c60a248b00cbc193a38dfe27c11619407895b1b8cb1fa42ff6",
+    "fixtures/proto-topics/source-bindings.json": "18ac6cb70dd5779fb1c6ac1c3537925933f4153b0abde4743d3b1f40d96a0cbd"
+  }
+}

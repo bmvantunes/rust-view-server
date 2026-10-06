@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/product-contract.test-d.ts",
+    "src/topic-contract.test-d.ts",
+    "src/rowid-contract.test-d.ts",
+    "src/standalone-contract.test-d.ts",
+    "src/codegen-symbols-contract.test-d.ts",
+    "src/grouped-contract.test-d.ts",
+    "src/grouped-dynamic-contract.test-d.ts",
+    "src/shape-contract.test-d.ts",
+    "src/retention-contract.test-d.ts"
+  ]
+}

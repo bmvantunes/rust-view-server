@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {defineCatalog,defineSchema,validateRow,validateQuery,verifyCatalog,int64,uint64,decimal,schemaFingerprint} from '../browser/src/topic-schema.ts';
+import {encodeGeneric,decodeGeneric,decode} from '../experiments/v131/js/msgpack.mjs';
+import {reconstruct} from '../browser/src/row-delta.mjs';
+const catalog=defineCatalog(JSON.parse(fs.readFileSync(new URL('../fixtures/topics/browser-catalog.json',import.meta.url))));await verifyCatalog(catalog);
+let checks=0;function rejects(f){assert.throws(f);checks++;}
+for(const value of ['9223372036854775808','-9223372036854775809','01','-0','1e3'])rejects(()=>int64(value));
+for(const value of ['18446744073709551616','-1','+1'])rejects(()=>uint64(value));
+for(const value of ['1.20','-0','1e3','NaN','0.'+'1'.repeat(129)])rejects(()=>decimal(value));
+assert.equal(int64('-9223372036854775808'),'-9223372036854775808');assert.equal(uint64('18446744073709551615'),'18446744073709551615');
+const order={orderId:'same',customer:'Alice',open:false,units:'18446744073709551615',price:'0.01',note:null};validateRow(catalog.orders.schema,order);validateRow(catalog.orders.schema,{...order,note:''});const missing={...order};delete missing.note;validateRow(catalog.orders.schema,missing);
+for(const extra of [{units:1},{price:1.25},{open:0},{note:[]},{customer:'x'.repeat(4097)},{orderId:'bad\nkey'},{wrong:true}])rejects(()=>validateRow(catalog.orders.schema,{...order,...extra}));
+for(const patch of [{fields:[...catalog.orders.schema.fields,catalog.orders.schema.fields[0]]},{id:'__proto__'},{key:'note'},{fields:[{...catalog.orders.schema.fields[0],kind:'object'}]},{retention:{age:3}}])rejects(()=>defineSchema({...catalog.orders.schema,...patch}));
+for(const query of [{select:['symbol'],orderBy:[]},{select:['price','price'],orderBy:[]},{select:['price'],orderBy:[{field:'unknown',direction:'asc'}]},{select:['price'],orderBy:[],where:{op:'eq',field:'units',value:1}},{select:['price'],orderBy:[],where:{op:'sum',field:'price'}},{select:['price'],orderBy:[],where:{op:'is_null',field:'units'}},{select:['price'],orderBy:[],where:{op:'in',field:'price',values:[]}}])rejects(()=>validateQuery(catalog.orders.schema,query));
+const generic={number:1.5,quantity:'not an integer field',coefficient:'not a decimal',exact:'18446744073709551615'};assert.deepEqual(JSON.parse(JSON.stringify(decodeGeneric(encodeGeneric(generic)))),generic);rejects(()=>decode(encodeGeneric(generic)));rejects(()=>decodeGeneric(new Uint8Array([0xcb,0x7f,0xf0,0,0,0,0,0,0])));rejects(()=>decodeGeneric(new Uint8Array([0x82,0xa1,120,1,0xa1,120,2])));
+const entry=catalog.orders,contract={topic:'orders',schema:entry.fingerprint,key:entry.schema.key,fields:entry.schema.fields.map(f=>f.name),validate:(row,p)=>validateRow(entry.schema,row,p)};
+const batch={topic:'orders',schema:entry.fingerprint,subscription:'test',query_generation:1,sequence:1,start_rank:0,version:1,total_rows:1,revision:1,contentVersion:1,windowId:1,effectiveEnd:1,projection:['price','note'],kind:'snapshot',keys:['same'],rows:[{price:'0.01'}]};
+const base=reconstruct(undefined,batch,contract);assert.deepEqual(base.rows,[{price:'0.01'}]);rejects(()=>reconstruct(base,{...batch,topic:'positions',revision:2},contract));rejects(()=>reconstruct(base,{...batch,revision:2,schema:'0'.repeat(64)},contract));rejects(()=>reconstruct(base,{...batch,revision:2,rows:[{price:0.01}]},contract));assert.deepEqual(base.rows,[{price:'0.01'}]);
+console.log(JSON.stringify({passed:true,negativeChecks:checks,topics:Object.keys(catalog),wideFields:catalog.wide.schema.fields.length,fingerprints:Object.fromEntries(await Promise.all(Object.entries(catalog).map(async([k,v])=>[k,await schemaFingerprint(v.schema)])))}));

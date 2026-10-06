@@ -1,0 +1,4 @@
+disallowed-methods = [
+  { path = "differential_dataflow::operators::threshold::ThresholdTotal::distinct_total", reason = "Differential 0.25.1 loses zero-transition retractions. Use the backend distinct_nonzero helper; retain this ban until an upgrade is independently retested." },
+  { path = "differential_dataflow::operators::threshold::ThresholdTotal::distinct_total_core", reason = "Differential 0.25.1 uses a constant-one threshold. Use the backend distinct_nonzero helper; intentional upstream reproducers need a narrow explained lint expectation." },
+]

@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {applyEvent,initialClientState} from '../../reference/packages/client/src/live-query-state.ts';
+import {reconstruct} from '../browser/src/row-delta.mjs';
+const snapshot={kind:'snapshot',subscription:'s',query_generation:1,sequence:1,start_rank:0,version:1,contentVersion:1,total_rows:4,revision:1,windowId:1,effectiveEnd:4,projection:['label'],keys:['a','b','c','d'],rows:['a','b','c','d'].map(value=>({label:{state:'value',value}}))};
+const ops=[{type:'remove',key:'b'},{type:'move',key:'d',fromIndex:2,toIndex:0},{type:'insert',key:'e',index:1,row:{label:{state:'null'}}},{type:'move',key:'c',fromIndex:3,toIndex:2},{type:'update',key:'c',index:2,row:{label:{state:'missing'}}}];
+let ref=applyEvent(initialClientState(),{type:'snapshot',topic:'products',queryId:'s',version:1,totalRows:4,keys:snapshot.keys,rows:snapshot.rows});
+const prior=reconstruct(undefined,snapshot);const batch={...snapshot,kind:'delta',rows:undefined,keys:undefined,revision:2,fromRevision:1,fromVersion:1,toVersion:3,contentVersion:3,operations:ops};const next=reconstruct(prior,batch);
+ref=applyEvent(ref,{type:'delta',topic:'products',queryId:'s',fromVersion:1,toVersion:3,totalRows:4,operations:ops});assert.deepEqual(ref.keys,['d','e','c','a']);assert.deepEqual(ref.keys,next.keys);assert.deepEqual(ref.rows,next.rows);assert.equal(ref.totalRows,next.total_rows);assert.equal(ref.status,'ready');
+const refTotal=applyEvent(ref,{type:'delta',topic:'products',queryId:'s',fromVersion:3,toVersion:4,totalRows:7,operations:[]});assert.equal(refTotal.totalRows,7);assert.deepEqual(refTotal.rows,next.rows);
+const refBad=applyEvent(ref,{type:'delta',topic:'products',queryId:'s',fromVersion:3,toVersion:4,totalRows:4,operations:[{type:'update',key:'a',index:0,row:{label:{state:'null'}}}]});assert.equal(refBad.status,'stale');assert.deepEqual(refBad.rows,next.rows);
+console.log(JSON.stringify({passed:true,referenceCommit:'8aa77efabe59da335c5a5de321c6ac41b242fb34',scope:'actual reference client fixed mixed positional batch, total-only and invalid-operation atomicity; reference engine suite not executed'}));

@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';import {validRowId} from '../browser/src/row-id.mjs';import {reconstruct} from '../browser/src/row-delta.mjs';import {defineSchema,validateRow,verifyCatalog} from '../browser/src/topic-schema.ts';
+const c=JSON.parse(fs.readFileSync(new URL('../fixtures/proto-topics/browser-catalog.json',import.meta.url)));await verifyCatalog(c);const entry=c.orders,contract={topic:'orders',schema:entry.fingerprint,key:'rowId',fields:entry.schema.fields.map(f=>f.name),validate:(r,p)=>validateRow(entry.schema,r,p)};
+const good='rid2:0101010000000161';assert(validRowId(good));
+const bad=['',null,'a','rid2:','rid2:01010100000002ff','rid2:01010100000001ff','rid2:0101020000000102','rid2:010103000000088000000000000000','rid2:010103000000087ff0000000000000','rid2:01010600000003312e30',good+'00',good.toUpperCase(),'rid2:01010600000004efbbbf30'];
+for(const k of bad)assert.equal(validRowId(k),false,String(k));
+assert(validRowId('rid2:01010100000003efbbbf'));
+const batch={topic:'orders',schema:entry.fingerprint,subscription:'s',query_generation:1,sequence:1,start_rank:0,version:1,total_rows:1,revision:1,contentVersion:1,windowId:1,effectiveEnd:1,projection:['customer'],kind:'snapshot',keys:[good],rows:[{customer:'A'}]};
+const prior=reconstruct(undefined,batch,contract);for(const key of bad)assert.throws(()=>reconstruct(undefined,{...batch,keys:[key]},contract));assert.throws(()=>reconstruct(undefined,{...batch,rows:[{customer:'A',rowId:good}]},contract));
+assert.throws(()=>defineSchema({...entry.schema,fields:[...entry.schema.fields,{name:'rowId',kind:'string',optional:false,nullable:false}]}));
+const stale=structuredClone(c);stale.orders.schema.fields[1].optional=true;await assert.rejects(()=>verifyCatalog(stale));assert.deepEqual(prior.rows,[{customer:'A'}]);
+console.log(JSON.stringify({passed:true,malformedIds:bad.length,staleCatalogRejected:true,payloadCollisionRejected:true}));

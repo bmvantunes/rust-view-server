@@ -1,0 +1,33 @@
+{
+  "name": "rust-differential-product-browser",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=24.21.0"
+  },
+  "scripts": {
+    "test": "vp test run"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "@vitest/browser": "4.1.11",
+    "@vitest/browser-playwright": "4.1.11",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "playwright": "1.62.1",
+    "typescript": "7.0.2",
+    "vite-plus": "0.3.0",
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.3.0",
+    "vitest": "4.1.11",
+    "vitest-browser-react": "2.2.0"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "1.9.1",
+    "@opentelemetry/core": "2.11.0",
+    "@opentelemetry/sdk-trace-base": "2.11.0",
+    "@opentelemetry/resources": "2.11.0",
+    "@opentelemetry/exporter-trace-otlp-proto": "0.222.0"
+  }
+}

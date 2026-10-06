@@ -1,0 +1,37 @@
+// Bounded implementation smoke: supplied native binary, private broker, actual Worker and hooks.
+import fs from 'node:fs/promises';import path from 'node:path';import http from 'node:http';import {spawn} from 'node:child_process';import {createRequire} from 'node:module';import {createHash} from 'node:crypto';import assert from 'node:assert/strict';
+import {decodeGeneric} from '../experiments/v131/js/msgpack.mjs';
+const W=path.resolve(import.meta.dirname,'..'),[configPath,out,rt]=process.argv.slice(2),{chromium}=createRequire(W+'/browser/package.json')('playwright');
+const cfg=JSON.parse(await fs.readFile(configPath,'utf8')),topics=['catalog','class','balanceKeyFields','defineSchema','defineCatalog','schemas','keyFields','comparison_products','comparisonProducts'];
+const binary=W+'/bin/view_server_kafka_topics',producerBinary=W+'/bin/generic_kafka_producer_fixture',build=W+'/build/codegen-symbols';
+const logs=[],acks=[],wire=[],observations=[],children=[];let server,browser,page,producer,ack=0;
+const pause=ms=>new Promise(r=>setTimeout(r,ms)),alive=p=>p.exitCode===null&&p.signalCode===null;
+async function wait(fn,label,ms=45000){const end=Date.now()+ms;while(Date.now()<end){if(await fn())return;await pause(25);}throw Error('timeout '+label);}
+function launch(bin,label){const p=spawn(bin,[configPath],{cwd:rt,env:process.env});children.push(p);let pending='';p.on('error',e=>logs.push({label,text:String(e)}));for(const s of [p.stdout,p.stderr])s.on('data',b=>{logs.push({label,text:b.toString()});if(label==='producer'&&s===p.stdout){pending+=b;while(pending.includes('\n')){const i=pending.indexOf('\n'),line=pending.slice(0,i);pending=pending.slice(i+1);try{acks.push(JSON.parse(line));}catch{}}}});return p;}
+async function bindings(){const result={};async function visit(dir){for(const e of await fs.readdir(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())await visit(p);else result[path.relative(W,p)]=createHash('sha256').update(await fs.readFile(p)).digest('hex');}}for(const d of [build,W+'/examples/symbol-collisions'])await visit(d);for(const p of [binary,producerBinary,W+'/browser/src/codegen-symbols-smoke.tsx',W+'/scripts/generate-proto-topics.mjs'])result[path.relative(W,p)]=createHash('sha256').update(await fs.readFile(p)).digest('hex');return result;}
+// Literal oracle derived directly from the public tuple format: version/count,
+// UTF-8 string tag+length+bytes, uint64 tag+length+8-byte big-endian value.
+// No production rowId encoder, fold helper, or producer acknowledgment supplies expectations.
+const keyA={tenant:'ab',account:'18446744073709551615'},keyB={tenant:'a',account:'18446744073709551614'};
+const idA='rid2:0102010000000261620500000008ffffffffffffffff',idB='rid2:01020100000001610500000008fffffffffffffffe';
+async function produce(topic,partition,key,row){const id=++ack;producer.stdin.write(JSON.stringify({topic,partition,key,ack:id,...(row?{row}:{delete:true})})+'\n');await wait(()=>acks.some(a=>a.ack===id),'producer ack');assert.equal(acks.find(a=>a.ack===id).key,partition===0?idA:idB);}
+async function rows(phase,expected){for(const topic of topics){await wait(async()=>{const s=await page.evaluate(()=>window.symbolSmoke.observe());return s.latest[topic]?.status==='ready'&&JSON.stringify(s.latest[topic].rows)===JSON.stringify(expected)&&JSON.stringify(s.windows[topic]?.rows)===JSON.stringify(Object.fromEntries(expected.map((r,i)=>[i,r])));},phase+' '+topic);const s=await page.evaluate(()=>window.symbolSmoke.observe());assert.equal(s.latest[topic].totalRows,expected.length);assert.equal(s.windows[topic].count,expected.length);assert.deepEqual(s.windows[topic].keys,Object.fromEntries(expected.map((r,i)=>[i,r.rowId])));for(const r of s.latest[topic].rows)assert.deepEqual(Object.keys(r),['quantity','rowId']);}observations.push({phase,value:await page.evaluate(()=>window.symbolSmoke.observe())});}
+const before=await bindings();assert.equal(before['bin/view_server_kafka_topics'],'c1aced73a5534c46be05f0c1ddff87e0fb945e2b10e18153339847abafc2ee6f');await fs.writeFile(out+'/artifacts-before.json',JSON.stringify(before,null,2));
+try{
+ assert.deepEqual(cfg.catalog.topics.map(t=>t.topic),topics);assert.deepEqual(cfg.sources.map(s=>s.topic),topics);
+ server=http.createServer(async(req,res)=>{try{const file=path.resolve(build,'.'+new URL(req.url,'http://local').pathname);if(!file.startsWith(build+'/'))throw Error('path');res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.wasm')?'application/wasm':'text/html');res.end(await fs.readFile(file));}catch{res.writeHead(404).end();}});await new Promise(r=>server.listen(0,'127.0.0.1',r));cfg.origin='http://127.0.0.1:'+server.address().port;await fs.writeFile(configPath,JSON.stringify(cfg));await fs.writeFile(out+'/configuration.json',JSON.stringify(cfg,null,2));
+ producer=launch(producerBinary,'producer');await wait(()=>acks.some(a=>a.producer_ready),'producer ready');
+ for(const topic of topics){await produce(topic,0,keyA,{businessId:'A',quantity:'-9223372036854775808',risk:0});await produce(topic,1,keyB,{businessId:'B',quantity:'9223372036854775807',risk:1});}
+ const service=launch(binary,'native');await wait(()=>logs.some(x=>x.label==='native'&&x.text.includes('"state":"ready"'))||!alive(service),'native ready');assert(alive(service));
+ browser=await chromium.launch({headless:true});page=await browser.newPage();page.on('pageerror',e=>logs.push({label:'browser-error',text:String(e)}));page.on('websocket',ws=>ws.on('framereceived',e=>{try{wire.push(decodeGeneric(Buffer.from(e.payload)));}catch{}}));await page.goto(cfg.origin+'/codegen-symbols.html');await page.evaluate(({url,token})=>window.symbolSmoke.start(url,token),{url:'ws://'+cfg.bind+'/v15',token:process.env.V12_SESSION_TOKEN});
+ await rows('initial',[{quantity:'9223372036854775807',rowId:idB},{quantity:'-9223372036854775808',rowId:idA}]);
+ for(const topic of topics)await produce(topic,0,keyA,{businessId:'CHANGED-unselected',quantity:'9007199254740993',risk:99});
+ await rows('reordered-same-identity',[{quantity:'9007199254740993',rowId:idA},{quantity:'9223372036854775807',rowId:idB}]);
+ for(const topic of topics)await produce(topic,0,keyA,null);
+ await rows('key-only-tombstone',[{quantity:'9223372036854775807',rowId:idB}]);
+ assert(!logs.some(x=>x.label==='browser-error'));const after=await bindings();assert.deepEqual(after,before);await fs.writeFile(out+'/artifacts-after.json',JSON.stringify(after,null,2));
+ const health=await fetch('http://'+cfg.health.bind+'/health',{headers:{Authorization:'Bearer '+process.env.V12_SESSION_TOKEN}}).then(r=>r.json());await fs.writeFile(out+'/result.json',JSON.stringify({passed:true,scope:'implementation smoke only; no new independent acceptance or native build',topics,binary:before['bin/view_server_kafka_topics'],bothHooks:true,selectedFields:['quantity'],excluded:['businessId','risk'],stableRowIds:[idA,idB],health,observations},null,2));console.log(JSON.stringify({passed:true,topics,identity:before['bin/view_server_kafka_topics']}));
+}finally{
+ for(const [name,value]of Object.entries({logs,acks,wire,observations}))await fs.writeFile(out+'/'+name+'.json',JSON.stringify(value,null,2));
+ if(page)try{await page.evaluate(()=>window.symbolSmoke.dispose());}catch{}await browser?.close();for(const c of children)if(alive(c))c.kill('SIGTERM');await pause(500);for(const c of children)if(alive(c))c.kill('SIGKILL');if(server)await new Promise(r=>server.close(r));
+}

@@ -1,0 +1,15 @@
+import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';import {createRequire} from 'node:module';import {createHash} from 'node:crypto';import {completeChains} from './focused-trace-chain.mjs';
+const W=path.resolve(import.meta.dirname,'..'),R=path.dirname(W),run=path.resolve(process.argv[2]??R+'/repair-evidence/focused-666e6df0'),req=createRequire(W+'/experiments/v131/package.json'),pb=req('protobufjs');
+const root=new pb.Root();root.resolvePath=(_,target)=>path.join(W,'fixtures/otel-proto',target);await root.load(['opentelemetry/proto/collector/trace/v1/trace_service.proto','opentelemetry/proto/collector/metrics/v1/metrics_service.proto']);
+const types={traces:root.lookupType('opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest'),metrics:root.lookupType('opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest')};
+const packets=JSON.parse(fs.readFileSync(run+'/otlp/decoded.json')),wire=JSON.parse(fs.readFileSync(run+'/wire-frames.json')),checks=JSON.parse(fs.readFileSync(run+'/chain-checks.json'));const exported=new Map();let count=0;
+for(const [i,p]of packets.entries()){
+ const bytes=fs.readFileSync(`${run}/otlp/${i}-${p.type}.pb`);assert.equal(bytes.length,p.bytes);assert.deepEqual(types[p.type].toObject(types[p.type].decode(bytes),{longs:String,bytes:String,enums:String}),p.decoded);
+ for(const r of p.decoded.resourceSpans??[])for(const scope of r.scopeSpans??[])for(const s of scope.spans??[]){count++;exported.set(Buffer.from(s.spanId,'base64').toString('hex'),p.received);}
+}
+const timing=[];
+for(const c of checks){assert(completeChains(packets,wire,c.phase,c.topic,c.kind).some(x=>JSON.stringify(x.chain)===JSON.stringify(c.chain)));assert(c.waitMs<=c.boundMs&&c.boundMs===15000);assert(c.receiverObservedAt>=Math.max(...c.chain.map(s=>exported.get(s.spanId))));timing.push({phase:c.phase,topic:c.topic,frameContext:c.frameContext,waitMs:c.waitMs,exportDelayFromFrameMs:c.chain.map(s=>({name:s.name,delayMs:exported.get(s.spanId)-c.frameReceivedAt}))});}
+for(const topic of ['orders','positions','balances'])for(const [phase,kind]of [['initial-acquisition','acquisition'],['ordinary-live-'+topic,'live'],['graceful-reconnect','acquisition']])assert(checks.some(c=>c.topic===topic&&c.phase===phase&&c.kind===kind));
+const before=JSON.parse(fs.readFileSync(run+'/artifacts-before.json')),after=JSON.parse(fs.readFileSync(run+'/artifacts-after.json'));assert.deepEqual(before,after);for(const [p,h]of Object.entries(after))assert.equal(createHash('sha256').update(fs.readFileSync(W+'/'+p)).digest('hex'),h,p);
+assert.equal(after['bin/view_server_kafka_topics'],'c1aced73a5534c46be05f0c1ddff87e0fb945e2b10e18153339847abafc2ee6f');
+const result={passed:true,scope:'offline raw-protobuf/frame/parent re-verification of newly executed implementation evidence; not independent acceptance',packets:packets.length,spans:count,completeChains:checks.length,productionBinaryUnchanged:true,timing};fs.writeFileSync(run+'/verification.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result));
